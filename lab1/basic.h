@@ -14,7 +14,7 @@ struct pcb {
     int lasttime; // last execute time
     int tottime; // totle execute time
 };
-// process node
+// process node tree
 struct pnode {
     pcb* node;
     pnode* sub;
@@ -60,7 +60,7 @@ int instr(char* s, char c)
             return i;
     return -1;
 }
-// change the string to array data
+// parse comma delimited string to array
 int* strtoarray(char* s)
 {
     int *a, count, x1;

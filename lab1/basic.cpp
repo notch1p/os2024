@@ -92,7 +92,7 @@ int main()
         scanf("%s", cmdstr);
         if (!strcmp(cmdstr, "exit")) // exit the program
             break;
-        if (!strcmp(cmdstr, "showdetail")) {
+        if (!strcmp(cmdstr, "showdetail")) { // show details of all process
             cflag = 1;
             pflag = 1;
             showdetail();
