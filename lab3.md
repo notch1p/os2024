@@ -1,3 +1,58 @@
+## Lab3
+
+输出示例 (数据来自课本 P102):
+
+```plaintext
+Number of processes: 5
+Number of resource types: 3
+Initial Available resources: (3 3 2)
+Initial Allocation: ((0 1 0) (2 0 0) (3 0 2) (2 1 1) (0 0 2))
+Initial Need: ((7 4 3) (1 2 2) (6 0 0) (0 1 1) (4 3 1))
+Work+Allocation: (10 5 7)
+The system is Safe initially. Possible safe sequence being (1 3 4 0 2) 
+
+Enter (PROCESS-ID REQUEST)
+1 (1 0 2)
+
+Requesting: PROC1,(1 0 2)
+requesting allocation for process 1: (1 0 2)
+Work+Allocation: (10 5 7)
+Allocation for PROC1:(1 0 2) is safe
+Available resources: (2 3 0)
+Allocation: ((0 1 0) (3 0 2) (3 0 2) (2 1 1) (0 0 2))
+Need: ((7 4 3) (0 2 0) (6 0 0) (0 1 1) (4 3 1))
+Safe sequence: (1 3 4 0 2)
+
+Enter (PROCESS-ID REQUEST)
+4 (3 3 0)
+
+Requesting: PROC4,(3 3 0)
+requesting allocation for process 4: (3 3 0)
+ERROR: Process 4 is requesting more than available resources.
+Allocation for PROC4:(3 3 0) is unsafe
+Restoring...
+
+Enter (PROCESS-ID REQUEST)
+0 (0 2 0)
+
+Requesting: PROC0,(0 2 0)
+requesting allocation for process 0: (0 2 0)
+Work+Allocation: (10 5 7)
+Allocation for PROC0:(0 2 0) is unsafe
+Restoring...
+```
+
+### 思考题
+
+安全性算法的本质是测试 allocation 之后所有的进程仍能够执行完毕 (即 allocation 不影响进程的执行成功率, 总是应该 100% 成功, 否则这个实现有问题). 因而需要复制 Available 一份到 work, 用于模拟 allocation 之后各线程的执行情况. 如果全部执行完毕 (i.e. `finish` 都为真), 这才能说明 allocation 正确.
+
+这一试探性的操作是尝试当前 allocation 是否正确的, 不应该把测试中所产生的临时量直接更新到 Available 中 (即测试中产生的 side effects 不应该外泄), 否则每次 `check` 都会把所有进程执行直至全部执行完毕 (或有失败), 这显然是错误的.
+
+### 完整代码
+
+(注释掉的代码就是课本 P102 的数据)
+
+```lisp
 (format t "Enter process requests matrix shape (ROW COL): ~%")
 (defparameter requests (read))
 
@@ -171,3 +226,4 @@
              (list-incf available-resources (nth i allocation))
              (list-decf (nth i allocation) request)
              (list-incf (nth i need) request)))))))
+```

@@ -1,3 +1,77 @@
+## Lab2
+
+### 实验结果分析
+
+- 复杂度分析
+
+根据要求, 在代码中, 每个进程的状态（就绪; 运行; 阻塞）会在其运行时随机发生阻塞. 只有前两个状态的进程能够有机会获得时间片.
+根据要求, 我们增加了对前两个状态的进程进行随机阻塞的功能. 理想情况下我们认为 `rand()` 是均匀分布的, 因而阻塞的概率是 $\frac{1}{2}$, 不阻塞的概率是 $\frac{1}{2}$.
+
+优先级即权重,不影响复杂度.
+
+复杂度主要发生在队列的操作部分. 代码中的队列是用链表实现的, 因而插入操作是 $O(n)$ 的.
+无论进程是什么状态, 都要对其进行遍历操作, 所以也是 $O(n)$. 其他操作可在 $O(1)$ 内完成.
+则复杂度是 $O(n)$. 如果队列使用数组实现, 则复杂度为 $O(1)$.
+
+显然空间复杂度即队列长度 $O(n)$.
+
+- 结果分析
+
+考虑创建的四个线程, 时间片为 2:
+
+```plaintext
+id:0,state:0,pior:1,life:6
+id:1,state:0,pior:1,life:7
+id:3,state:0,pior:1,life:4
+id:2,state:0,pior:2,life:6
+```
+
+分析可知, 理想情况下 $P_0, P_1, P_2, P_3$ 各需 `3, 4, 3, 2` 个时间片才能全部运行完毕.
+
+实际运行的 Gantt 图如下所示:
+![rr-scheduling](./imgs/rr-scheduling-gantt.jpg)
+可以发现 $P_2$ 因为遇上中断而被阻塞, 不能完成任务.
+
+### 思考题
+
+- 数据结构
+
+因为优先级只有三个, 所以排序的时候采用了取巧的办法.
+直接开一个大小为 3 的数组分别存放各个优先级的进程队列.
+相同优先级的进程在队列中的顺序则是按照执行 `create` 产生 (即创建时的) 的顺序.
+仍然看上面的例子, 画出数据结构如下:
+<img src="./imgs/rr-queue.jpg" alt="rr-queue"  />
+
+- 增加随机中断功能
+
+可以用判断奇偶的方法随机确定是否中断一个进程, 如果发生中断则再次调度 (即再次调用 `routine()`):
+
+(同时还额外增加一个随机唤醒阻塞进程的功能)
+
+```c
+    // simulate when a interruption occurs
+    int interrupt = rand() & 1;
+    if (interrupt) {
+        printf("interrupt occurs for process = %d\n", r->ident);
+        // change state to blocked
+        sleep(r->ident);
+        printf("attemping to run RR scheduling again...\n");
+        routine();
+        return;
+    } else if (r->state == 2) {
+        printf("recovered from interruption for process = %d\n", r->ident);
+        awake(r->ident);
+        routine();
+        return;
+    }
+```
+
+这一实现的缺点在于, 本质上对 `routine()` 的调用是递归的, 且不是 tail-recursive 的,
+如果进程队列庞大, 则会爆 call stack.
+
+### 完整代码
+
+```c
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -338,3 +412,4 @@ int main()
     }
     return 0;
 }
+```
