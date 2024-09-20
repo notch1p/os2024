@@ -4,12 +4,17 @@ open IO(rand)
 open Array(mkArray)
 open Function(const)
 
-def genRandArray (cnt lo hi : Nat) (gen : StdGen) (l : Array Int := #[]) :=
-    match cnt with
+abbrev ℕ := Nat
+abbrev ℕₙ:= Array ℕ in
+def genRandArray (lo hi : ℕ) : ℕ -> StdGen -> ℕₙ
+  | i, gen =>
+    let rec genRandArrayHelper lo hi cnt gen l :=
+      match cnt with
       | 0     => (l, gen)
       | n + 1 =>
-        let (n', gen') := randNat gen lo hi
-        genRandArray n lo hi gen' (l.push (.ofNat n'))
+      let (n', gen') := randNat gen lo hi
+      genRandArrayHelper lo hi n gen' (l.push n')
+    genRandArrayHelper lo hi i gen #[] |> Prod.fst
 -- just noticed there's an IO.rand. dumb dumb.
 
 def gen2dArray row col lo hi :=
@@ -22,8 +27,8 @@ open String(toInt!)
 def main : IO Unit := do
   let stdin <- IO.getStdin
   println! s!"Enter request matrix shape (ROW; COL) e.g. 5; 3 : "
-
-  let (row,col) : RequestShape := match (<-stdin.getLine).trim.splitOn ";" with
+  let (row,col) : RequestShape :=
+    match (<-stdin.getLine).trim.splitOn ";" with
     | row :: col :: _ => (row.toNat!,col.toNat!)
     | _ => panic!"Invalid Input"
   println! s!"n_processes : {row}, n_resource_types : {col}"
@@ -39,25 +44,29 @@ def main : IO Unit := do
   let (safe?_init, safeseq) := b.check (row,col) |>.run (Array.mkArray row false, b.available.map id)
   if safe?_init then println! s!"System is safe initially. Safe sequence: {safeseq}"
   else println! s!"System is not safe initially. {safeseq}"
-  println! "Enter (PROCESS-ID : Nat; REQUEST : Array Nat) e.g. 0; 1,2,3,4 : "
-  let (reqId, req) : (Nat × Array Int) :=
-    match (<-stdin.getLine).trim.splitOn ";" with
-      | ids :: (r :: _) =>
-        match ids.toNat!, r.splitOn "," |>.map toInt! |>.toArray with
+  println! "Enter (PROCESS-ID : Nat; REQUEST : Array Nat) e.g. 0; 1,2,3,4  or <C-d> to exit: "
+  repeat do
+    match (<-stdin.getLine).trim with
+    | "" => return ()
+    | s  =>
+      let (reqId, req) : (Nat × Array Int) :=
+        match s.splitOn ";" with
+        | ids :: (r :: _) =>
+          match ids.toNat!, r.splitOn "," |>.map toInt! |>.toArray with
           | id, req => (id,req)
-      | _ => panic!"Invalid Input"
-  println! s!"Requesting: PROC{reqId}:{req}"
-  match <- bankers b (row,col) req reqId with
-    | (false, _) =>
-      println! s!"Allocation for PROC{reqId}: {req} is unsafe."
-      println! s!"Restoring..."
-      IO.sleep 1000
-      b := { b with
-        available := b.available + allocation.get! reqId,
-        allocation := b.allocation.set! reqId (allocation.get! reqId - req),
-        need := b.need.set! reqId req
-      }
-    | (true, ss) =>
-      println! s!"Allocation for PROC{reqId}: {req} is safe."
-      println! b
-      println! s!"Safe Sequence: {ss}"
+        | _ => panic!"Invalid Input"
+      println! s!"Requesting: PROC{reqId}:{req}"
+      match <- bankers b (row,col) req reqId with
+      | (false, _) =>
+        println! s!"Allocation for PROC{reqId}: {req} is unsafe."
+        println! s!"Restoring..."
+        IO.sleep 1000
+        b := { b with
+          available := b.available + allocation[reqId]!,
+          allocation := b.allocation.set! reqId (allocation[reqId]! - req),
+          need := b.need.set! reqId req
+        }
+      | (true, ss) =>
+        println! s!"Allocation for PROC{reqId}: {req} is safe."
+        println! b
+        println! s!"Safe Sequence: {ss}"

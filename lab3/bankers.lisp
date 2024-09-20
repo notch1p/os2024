@@ -1,13 +1,13 @@
 (format t "Enter process requests matrix shape (ROW COL): ~%")
-(defparameter requests (read))
+(defparameter *requests* (read))
 
-; (defparameter requests '(5 3))
+; (defparameter *requests* '(5 3))
 
-(defparameter number-of-processes (first requests))
-(defparameter number-of-resource-type (second requests))
+(defparameter *number-of-processes* (first *requests*))
+(defparameter *number-of-resource-type* (second *requests*))
 
-(format t "Number of processes: ~A~%" number-of-processes)
-(format t "Number of resource types: ~A~%" number-of-resource-type)
+(format t "Number of processes: ~A~%" *number-of-processes*)
+(format t "Number of resource types: ~A~%" *number-of-resource-type*)
 
 (declaim
   (inline random-between)
@@ -17,15 +17,15 @@
   (+ start (random (1+ (- finish start)))))
 
 (defparameter available-resources
-              (loop for i from 1 to number-of-resource-type
+              (loop for i from 1 to *number-of-resource-type*
                     collect (random-between 1 10)))
 ; (defparameter available-resources '(3 3 2))
 (format t "Initial Available resources: ~A~%" available-resources)
 
 (defparameter allocation
               ; number-of-processes * number-of-resource-type
-              (loop for i from 1 to number-of-processes collect
-                      (loop for j from 1 to number-of-resource-type
+              (loop for i from 1 to *number-of-processes* collect
+                      (loop for j from 1 to *number-of-resource-type*
                             collect (random-between 0 4))))
 
 ; (defparameter allocation
@@ -38,9 +38,9 @@
 (format t "Initial Allocation: ~A~%" allocation)
 
 (defparameter maximum-needs
-              ; number-of-processes * number-of-resource-type
-              (loop for i from 1 to number-of-processes collect
-                      (loop for j from 1 to number-of-resource-type
+              ; number-of-processes * *number-of-resource-type*
+              (loop for i from 1 to *number-of-processes* collect
+                      (loop for j from 1 to *number-of-resource-type*
                             collect (random-between 1 6))))
 
 ; (defparameter maximum-needs
@@ -103,8 +103,8 @@
 (declaim (ftype (function () boolean) check))
 (defun check ()
   (let ((work (copy-tree available-resources))
-        (finish (make-list number-of-processes :initial-element nil))
-        (iota (iota number-of-processes))
+        (finish (make-list *number-of-processes* :initial-element nil))
+        (iota (iota *number-of-processes*))
         (exists-1-passed nil))
     (loop named loop-1 initially (setq safe-sequence nil)
         do
@@ -155,8 +155,8 @@
      `(,(read) ,(read))
    (declare (type fixnum i) (type list request))
    (format t "Requesting: PROC~A,~A~%" i request)
-   (if (/= (list-length request) number-of-resource-type)
-       (error "Request must be of length ~A." number-of-resource-type)
+   (if (/= (list-length request) *number-of-resource-type*)
+       (error "Request must be of length ~A." *number-of-resource-type*)
        (progn
         (if (bankers request i)
             (progn

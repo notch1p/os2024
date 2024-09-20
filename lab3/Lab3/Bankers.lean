@@ -14,17 +14,25 @@ deriving Repr, BEq
 def anyArrayGT (xs ys : Array Int) : Bool :=
   xs.zipWith ys (λ x y => x - y) |>.any (· >= 1)
 
+infix:65 " any> " => anyArrayGT
+
 @[inline]
 def anyArrayGE (xs ys : Array Int) : Bool :=
   xs.zipWith ys (λ x y => x - y) |>.any (· >= 0)
+
+infix:65 " any>= " => anyArrayGE
 
 @[inline]
 def allArrayLT (xs ys : Array Int) : Bool :=
   xs.zipWith ys (λ x y => y - x) |>.all (· >= 1)
 
+infix:65 " all< " => allArrayLT
+
 @[inline]
 def allArrayLE (xs ys : Array Int) : Bool :=
   xs.zipWith ys (λ x y => y - x) |>.all (· >= 0)
+
+infix:65 " all<= " => allArrayLE
 
 @[inline] def arraySub [Sub α] (xs ys : Array α) : Array α :=
   xs.zipWith ys (· - ·)
@@ -41,35 +49,37 @@ instance : ToString Banker where
   {
   b with
     available := b.available - req,
-    allocation := b.allocation.set! reqId ((b.allocation.get! reqId) + req)
-    need := b.need.set! reqId ((b.need.get! reqId) - req)
+    allocation := b.allocation.set! reqId ((b.allocation[reqId]!) + req)
+    need := b.need.set! reqId ((b.need[reqId]!) - req)
   }
 
-open List(range) in
+open Array(range) in
 def Banker.check (b : Banker) (s : RequestShape) : ReaderM ((Array Bool) × (Array Int)) (Bool × List Nat) := do
   let mut (finish, work) <- read
   let mut exists1 := true
   let mut safeseq := []
-  let mut range   := range s.1
   while exists1 do
     exists1 := false
-    for i in range do
-      if !(finish.get! i) && (allArrayLE (b.need.get! i) work) then
-          finish := finish.set! i true
-          work := work + b.allocation.get! i
+    for i in range s.1 do
+      if !(finish[i]!) && b.need[i]! all<= work then
+          finish  := finish.set! i true
+          work    := work + b.allocation[i]!
           exists1 := true
           safeseq := i :: safeseq
-          range := range.removeAll safeseq
   pure (finish.all id, safeseq.reverse)
+
+#print Banker.check
+
+#eval Banker.check {} (5,3) |>.run ⟨(mkArray 5 false),#[3,3,2]⟩
 
 open Array(mkArray) in
 def bankers (b : Banker) (s : RequestShape) (req : Request) (reqId : Nat) : IO (Bool × List Nat) := do
   println! s!"requesting allocation for PROC{reqId}: {req}"
-  if anyArrayGT req (b.need.get! reqId) then
+  if req any> b.need[reqId]! then
     println! s!"ERROR: Process {reqId} is requesting more than it needs"
     pure (false, [])
   else
-    if anyArrayGT req b.available then
+    if req any> b.available then
       println! s!"ERROR: Process {reqId} is requesting more than available resources"
       pure (false, [])
     else
