@@ -32,12 +32,13 @@
 *.app
 
 .vscode
+.lake
 
 *.bin
 
 *.pdf
 
-
+*-example.*
 *.FASL
 *.fasl
 *.lisp-temp
