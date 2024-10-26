@@ -1,5 +1,3 @@
-CXX = clang++
-CC = clang
 CXXFLAGS = -o2 -Wall -Wno-writable-strings
 CFLAGS = -o2 -Wall
 all: rr.bin

@@ -1,4 +1,3 @@
-CXX = clang++
 CXXFLAGS = -o2 -Wall -Wno-writable-strings
 
 all: basic.bin semaphore.bin

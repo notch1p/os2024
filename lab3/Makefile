@@ -1,10 +1,7 @@
-CXX = clang++
-CC = clang
 CXXFLAGS = -o2 -Wall -Wno-writable-strings
 CFLAGS = -o2
-LISP = sbcl
-LAKE = lake
-
+LISP ?= sbcl
+LAKE ?= lake
 all: bankers.fasl bankers.bin
 
 bankers.fasl: bankers.lisp

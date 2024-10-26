@@ -1,8 +1,7 @@
-CXX = clang++
-CC = clang
 CXXFLAGS = -o2 -Wall -Wno-writable-strings
 CFLAGS = -o2 -Wall
-LISP = sbcl
+LISP ?= sbcl
+LAKE ?= lake
 all: cp.bin cp.fasl
 
 cp.bin: ConsumerProducer.c
