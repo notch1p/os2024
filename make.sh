@@ -5,7 +5,10 @@ NC='\033[0m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 
-for dir in $(find . -type d -name "lab*" -exec test -e "{}/Makefile" \; -print); do
+for dir in $(find . -maxdepth 1 \
+        \( -type d -name "lab*" \
+                -o -name "final" \) \
+            -exec test -e "{}/Makefile" \; -print); do
     cd "$dir"
     if [[ $1 == "--clean" ]]; then
         echo -e "${RED}Cleaning $dir${NC}"
@@ -14,6 +17,6 @@ for dir in $(find . -type d -name "lab*" -exec test -e "{}/Makefile" \; -print);
         echo -e "${GREEN}Building $dir${NC}"
         make all
     fi
-    cd - > /dev/null
+    cd - >/dev/null
     echo -e "${YELLOW}Leaving $dir${NC}"
 done

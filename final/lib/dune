@@ -1,3 +1,5 @@
 (library
  (name final)
- (libraries core))
+ (libraries threads ppx_string_interpolation spices)
+ (preprocess
+  (pps ppx_string_interpolation)))

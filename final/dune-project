@@ -15,12 +15,15 @@
  (name final)
  (synopsis "The Final project of OS")
  (description "A longer description")
- (depends 
-    ocaml 
-    dune 
-    minttea 
-    core 
-    ppx_let 
-    ppx_inline_test))
+ (depends
+  ocaml
+  dune
+  minttea
+  spices
+  leaves
+  ; core 
+  ; ppx_let 
+  ; ppx_inline_test
+  ppx_string_interpolation))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/reference/dune-project/index.html

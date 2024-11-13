@@ -10,9 +10,9 @@ depends: [
   "ocaml"
   "dune" {>= "3.16"}
   "minttea"
-  "core"
-  "ppx_let"
-  "ppx_inline_test"
+  "spices"
+  "leaves"
+  "ppx_string_interpolation"
   "odoc" {with-doc}
 ]
 build: [

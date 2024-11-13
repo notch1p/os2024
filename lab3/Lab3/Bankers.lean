@@ -68,8 +68,6 @@ def Banker.check (b : Banker) (s : RequestShape) : ReaderM ((Array Bool) × (Arr
           safeseq := i :: safeseq
   pure (finish.all id, safeseq.reverse)
 
-#print Banker.check
-
 #eval Banker.check {} (5,3) |>.run ⟨(mkArray 5 false),#[3,3,2]⟩
 
 open Array(mkArray) in
