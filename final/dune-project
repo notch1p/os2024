@@ -1,0 +1,26 @@
+(lang dune 3.16)
+
+(name final)
+
+(generate_opam_files true)
+
+(source
+ (github notch1p/os2024))
+
+(authors "Evan Gao")
+
+(maintainers "Evan Gao")
+
+(package
+ (name final)
+ (synopsis "The Final project of OS")
+ (description "A longer description")
+ (depends 
+    ocaml 
+    dune 
+    minttea 
+    core 
+    ppx_let 
+    ppx_inline_test))
+
+; See the complete stanza docs at https://dune.readthedocs.io/en/stable/reference/dune-project/index.html

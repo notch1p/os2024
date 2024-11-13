@@ -1,0 +1,4 @@
+(executable
+ (public_name final)
+ (name main)
+ (libraries final core minttea ppx_let ppx_inline_test))
