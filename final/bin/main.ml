@@ -125,10 +125,11 @@ let update event model =
 
 let view model =
   if model.running
-  then (
+  then
+    let open Tuiconf in
     let logger =
       Array.mapi
-        (fun ix e -> if e = "" then "" else Format.sprintf "|%d => %s" ix e)
+        (fun ix e -> if e = "" then "" else Format.sprintf "%s%d\t%s" (bold "|") ix e)
         (match model.current with
          | Cp -> Cp_sem.logger
          | Rw -> Rw_sem.logger
@@ -137,7 +138,7 @@ let view model =
     let msg = Format.sprintf "%s" @@ Array.fold_left ( ^ ) "" logger in
     Format.sprintf
       {|
-%s Running %s:
+%s   Running %s:
   %s
   %s
 
@@ -160,13 +161,13 @@ Keybinds:
        then [%string "Buffer size = $(string_of_int !Cp_sem.buffer_size)"]
        else "")
       (if model.current = Cp
-       then [%string "Delay = $(string_of_float !Cp_sem.delay_snd)"]
-       else [%string "Delay = $(string_of_float !Rw_sem.delay_snd)"])
+       then Format.sprintf "Delay = %.1f" !Cp_sem.delay_snd
+       else Format.sprintf "Delay = %.1f" !Rw_sem.delay_snd)
       msg
       (if model.buf_activate then Text_input.view model.buf else "")
       (Tuiconf.keyword "Arrow Up/Down")
       (Tuiconf.keyword "b")
-      (Tuiconf.keyword "q"))
+      (Tuiconf.keyword "q")
   else (
     (* we create our options by mapping over them *)
     let options =
