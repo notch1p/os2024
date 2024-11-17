@@ -1,9 +1,8 @@
 (* using monitor to implement semaphore... who would've thought*)
 
 type semaphore =
-  { mutable x : int (** r/w on semaphore should be atomic*)
+  { mutable x : int
   ; mutex : Mutex.t
-  (** A positive semaphore means there are resources left. Signal a thread *)
   ; x_positive : Condition.t
   }
 
@@ -21,8 +20,10 @@ module Sem = struct
     | { mutex; x_positive; _ } ->
       let open Mutex in
       let open Condition in
+      (* r/w on semaphore should be atomic*)
       lock mutex;
       while s.x = 0 do
+        (* wait until semaphore is positive *)
         wait x_positive mutex
       done;
       s.x <- s.x - 1;
@@ -36,6 +37,7 @@ module Sem = struct
       let open Condition in
       lock mutex;
       s.x <- s.x + 1;
+      (* A positive semaphore means there are resources left. Signal a thread *)
       signal x_positive;
       unlock mutex
   ;;

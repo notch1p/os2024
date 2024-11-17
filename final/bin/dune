@@ -1,10 +1,18 @@
-(rule (with-stdout-to link_flags.Unix (echo "()")))
-(rule (with-stdout-to link_flags.Win32 (echo "(-cclib -static)")))
+(rule
+ (with-stdout-to
+  link_flags.Unix
+  (echo "()")))
+
+(rule
+ (with-stdout-to
+  link_flags.Win32
+  (echo "(-cclib -static)")))
 
 (executable
-  (public_name final)
-  (name main)
-  (libraries final minttea leaves)
-  (preprocess
-    (pps ppx_string_interpolation))
-  (link_flags (:include link_flags.%{os_type})))
+ (public_name final)
+ (name main)
+ (libraries final minttea leaves)
+ (preprocess
+  (pps ppx_string_interpolation))
+ (link_flags
+  (:include link_flags.%{os_type})))
