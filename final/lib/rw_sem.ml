@@ -35,16 +35,9 @@ let rec reader id =
     output_to
       logger
       idx
-      "[Reader %s]: %s\n"
-      (bold "%s" id)
-      (mint "acquired mutex on read_count");
+      "[Reader %s]: awakened\n"
+      (bold "%s" id);
     delay 0.1;
-    output_to
-      logger
-      idx
-      "[Reader %s]: reading, read_count = %s\n"
-      (bold "%s" id)
-      (mint "%d" !read_count);
     if !read_count = 1
        (* 如果是第一个访问文件的读者, 则加文件锁.
           表示读者对文件的独占访问. 之后的读者可跳过这一步. *)
@@ -58,6 +51,12 @@ let rec reader id =
         (highlight "first reader, locking file"));
     (* 对 `read_count` 的修改结束, 释放读者锁 *)
     ~+read_mutex;
+    output_to
+      logger
+      idx
+      "[Reader %s]: reading, read_count = %s\n"
+      (bold "%s" id)
+      (mint "%d" !read_count);
     (* 这里的 `delay` 模拟读取所消耗的时间, 此时可以存在一个或多个读者读取文件 *)
     delay !delay_snd;
     (* 读完文件, 需要再次加读者锁, 修改 `read_count -= 1`, 表示读者减少了一个 *)
@@ -67,7 +66,7 @@ let rec reader id =
       idx
       "[Reader %s]: %s\n"
       (bold "%s" id)
-      (mint "finished, releasing mutex on read_count");
+      (mint "finished reading");
     delay 0.1;
     read_count := !read_count - 1;
     if !read_count = 0 (* 如果是最后一个读完的读者, 需要释放文件锁, 以便写者写文件 *)
