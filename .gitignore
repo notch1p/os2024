@@ -87,3 +87,5 @@ setup.log
 
 # Local OPAM switch
 _opam/
+*.7z
+*.mp4
